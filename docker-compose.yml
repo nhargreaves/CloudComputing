@@ -1,0 +1,53 @@
+version: "3"
+services:
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - "/data/db"
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+    links:
+      - mongo
+    #volumes:
+    #  - "/data/db"
+  web:
+    # replace username/repo:tag with your name and image details
+    image: nclcloudcomputing/javabenchmarkapp
+    deploy:
+      replicas: 2
+      # restart_policy:
+      #  condition: on-failure
+        #      resources:
+        #limits:
+        #   cpus: "0.5"
+        #  memory: 50M
+    ports:
+      - "80:8080"
+    networks:
+      - webnet
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8082:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - webnet
+networks:
+  webnet:
